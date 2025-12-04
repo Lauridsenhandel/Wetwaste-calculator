@@ -1,0 +1,217 @@
+:root {
+    --primary-color: #2ecc71;
+    --primary-dark: #27ae60;
+    --text-color: #2c3e50;
+    --bg-color: #f4f7f6;
+    --card-bg: #ffffff;
+    --border-color: #e0e0e0;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    color: var(--primary-dark);
+    margin-bottom: 10px;
+}
+
+.calculator-grid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 30px;
+    /* align-items: start; Removed to allow sticky behavior */
+}
+
+@media (max-width: 800px) {
+    .calculator-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.card h2 {
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+    color: var(--text-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    color: #7f8c8d;
+    font-size: 0.85rem;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    accent-color: var(--primary-color);
+}
+
+.checkbox-group label {
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Results Section */
+.sticky-result {
+    position: sticky;
+    top: 20px;
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border-top: 5px solid var(--primary-color);
+}
+
+.sticky-result h2 {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.total-cost {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 30px;
+    line-height: 1;
+}
+
+.total-cost small {
+    font-size: 1rem;
+    color: #95a5a6;
+    font-weight: 400;
+}
+
+.breakdown {
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+}
+
+.breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+}
+
+.breakdown-item span:last-child {
+    font-weight: 600;
+}
+
+.co2-savings-box {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #e8f5e9;
+    border-radius: 8px;
+    text-align: center;
+    color: #2e7d32;
+    font-weight: 600;
+    border: 1px solid #c8e6c9;
+}
+
+.co2-savings-box span {
+    font-size: 1.2em;
+    font-weight: 700;
+}
+
+.cta-box {
+    margin-top: 30px;
+    text-align: center;
+    background: #e8f8f5;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.cta-box p {
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.cta-button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    width: 100%;
+}
+
+.cta-button:hover {
+    background: var(--primary-dark);
+}
