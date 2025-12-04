@@ -1,158 +1,174 @@
 <!DOCTYPE html>
 <html lang="da">
-<h1>Beregn dine omkostninger til madaffald</h1>
-<p>Få overblik over din virksomheds nuværende udgifter til håndtering af madaffald.</p>
-</header>
 
-<div class="calculator-grid">
-    <!-- Input Section -->
-    <div class="input-section">
-        <form id="calculator-form">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Madaffalds Beregner</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
 
-            <!-- Basic Inputs -->
-            <div class="card">
-                <h2>Generelle Oplysninger</h2>
+<body>
 
-                <div class="form-group">
-                    <label for="waste-amount">Mængde madaffald (årligt)</label>
-                    <select id="waste-amount">
-                        <option value="7500">0 - 15.000 kg</option>
-                        <option value="20000">15.000 - 25.000 kg</option>
-                        <option value="37500">25.000 - 50.000 kg</option>
-                        <option value="60000">50.000+ kg</option>
-                    </select>
-                    <small>Vælg et estimat hvis du ikke kender det præcise tal.</small>
-                </div>
+    <div class="container">
+        <header>
+            <h1>Beregn dine omkostninger til madaffald</h1>
+            <p>Få overblik over din virksomheds nuværende udgifter til håndtering af madaffald.</p>
+        </header>
 
-                <div class="form-group">
-                    <label for="handling-time">Tid brugt på affaldshåndtering (timer/dag)</label>
-                    <input type="number" id="handling-time" value="1" step="0.5" min="0">
-                    <small>Inkl. transport til container, rengøring m.m.</small>
-                </div>
+        <div class="calculator-grid">
+            <!-- Input Section -->
+            <div class="input-section">
+                <form id="calculator-form">
 
-                <div class="form-group">
-                    <label for="hourly-wage">Timeløn (DKK)</label>
-                    <input type="number" id="hourly-wage" value="200">
-                </div>
+                    <!-- Basic Inputs -->
+                    <div class="card">
+                        <h2>Generelle Oplysninger</h2>
 
-                <div class="checkbox-group">
-                    <input type="checkbox" id="has-cooling">
-                    <label for="has-cooling">Opbevaring på køl?</label>
-                </div>
+                        <div class="form-group">
+                            <label for="waste-amount">Mængde madaffald (årligt)</label>
+                            <select id="waste-amount">
+                                <option value="7500">0 - 15.000 kg</option>
+                                <option value="20000">15.000 - 25.000 kg</option>
+                                <option value="37500">25.000 - 50.000 kg</option>
+                                <option value="60000">50.000+ kg</option>
+                            </select>
+                            <small>Vælg et estimat hvis du ikke kender det præcise tal.</small>
+                        </div>
 
-                <div class="checkbox-group">
-                    <input type="checkbox" id="has-fat-separator">
-                    <label for="has-fat-separator">Har fedtudskiller?</label>
-                </div>
+                        <div class="form-group">
+                            <label for="handling-time">Tid brugt på affaldshåndtering (timer/dag)</label>
+                            <input type="number" id="handling-time" value="1" step="0.5" min="0">
+                            <small>Inkl. transport til container, rengøring m.m.</small>
+                        </div>
 
-                <div class="form-group">
-                    <label for="address">Din Adresse (for transportberegning)</label>
-                    <input type="text" id="address" placeholder="Indtast vejnavn og by">
-                    <small>Vi finder det tætteste biogasanlæg automatisk.</small>
-                </div>
+                        <div class="form-group">
+                            <label for="hourly-wage">Timeløn (DKK)</label>
+                            <input type="number" id="hourly-wage" value="200">
+                        </div>
 
-                <div class="form-group">
-                    <label for="other-expenses">Andre årlige udgifter (DKK)</label>
-                    <input type="number" id="other-expenses" value="0" placeholder="F.eks. tabt bestik, nye spande">
-                </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="has-cooling">
+                            <label for="has-cooling">Opbevaring på køl?</label>
+                        </div>
+
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="has-fat-separator">
+                            <label for="has-fat-separator">Har fedtudskiller?</label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">Din Adresse (for transportberegning)</label>
+                            <input type="text" id="address" placeholder="Indtast vejnavn og by">
+                            <small>Vi finder det tætteste biogasanlæg automatisk.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="other-expenses">Andre årlige udgifter (DKK)</label>
+                            <input type="number" id="other-expenses" value="0"
+                                placeholder="F.eks. tabt bestik, nye spande">
+                        </div>
+                    </div>
+
+                    <!-- Advanced Inputs -->
+                    <div class="card" id="cooling-details" style="display: none;">
+                        <h2>Kølerums Detaljer</h2>
+                        <div class="form-group">
+                            <label for="cooling-kwh">Strømforbrug (kWh/time)</label>
+                            <input type="number" id="cooling-kwh" value="1.5" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="cooling-hours">Aktive timer pr. dag</label>
+                            <input type="number" id="cooling-hours" value="24">
+                        </div>
+                        <div class="form-group">
+                            <label for="cooling-days">Dage om året</label>
+                            <input type="number" id="cooling-days" value="365">
+                        </div>
+                        <div class="form-group">
+                            <label for="kwh-price">Elpris (DKK/kWh)</label>
+                            <input type="number" id="kwh-price" value="1.25" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Bortskaffelse</h2>
+                        <div class="form-group">
+                            <label for="bin-volume">Beholdertype</label>
+                            <select id="bin-volume">
+                                <option value="60">60 Liter (ca. 60 kg)</option>
+                                <option value="120">120 Liter (ca. 120 kg)</option>
+                                <option value="240">240 Liter (ca. 240 kg)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="bins-emptied-daily">Antal spande tømt dagligt</label>
+                            <input type="number" id="bins-emptied-daily" value="1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="emptying-price">Pris pr. tømning (DKK)</label>
+                            <input type="number" id="emptying-price" value="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="working-days">Arbejdsdage pr. år</label>
+                            <input type="number" id="working-days" value="260">
+                        </div>
+                    </div>
+
+                </form>
             </div>
 
-            <!-- Advanced Inputs -->
-            <div class="card" id="cooling-details" style="display: none;">
-                <h2>Kølerums Detaljer</h2>
-                <div class="form-group">
-                    <label for="cooling-kwh">Strømforbrug (kWh/time)</label>
-                    <input type="number" id="cooling-kwh" value="1.5" step="0.1">
-                </div>
-                <div class="form-group">
-                    <label for="cooling-hours">Aktive timer pr. dag</label>
-                    <input type="number" id="cooling-hours" value="24">
-                </div>
-                <div class="form-group">
-                    <label for="cooling-days">Dage om året</label>
-                    <input type="number" id="cooling-days" value="365">
-                </div>
-                <div class="form-group">
-                    <label for="kwh-price">Elpris (DKK/kWh)</label>
-                    <input type="number" id="kwh-price" value="1.25" step="0.01">
-                </div>
-            </div>
+            <!-- Results Section -->
+            <div class="results-section">
+                <div class="sticky-result">
+                    <h2>Dine Nuværende Omkostninger</h2>
 
-            <div class="card">
-                <h2>Bortskaffelse</h2>
-                <div class="form-group">
-                    <label for="bin-volume">Beholdertype</label>
-                    <select id="bin-volume">
-                        <option value="60">60 Liter (ca. 60 kg)</option>
-                        <option value="120">120 Liter (ca. 120 kg)</option>
-                        <option value="240">240 Liter (ca. 240 kg)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="bins-emptied-daily">Antal spande tømt dagligt</label>
-                    <input type="number" id="bins-emptied-daily" value="1" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="emptying-price">Pris pr. tømning (DKK)</label>
-                    <input type="number" id="emptying-price" value="50">
-                </div>
-                <div class="form-group">
-                    <label for="working-days">Arbejdsdage pr. år</label>
-                    <input type="number" id="working-days" value="260">
-                </div>
-            </div>
+                    <div class="total-cost">
+                        <span id="total-annual-cost">0</span> DKK
+                        <small>pr. år</small>
+                    </div>
 
-        </form>
-    </div>
+                    <div class="breakdown">
+                        <div class="breakdown-item">
+                            <span>Lønomkostninger</span>
+                            <span id="labor-cost">0 DKK</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>Bortskaffelse</span>
+                            <span id="disposal-cost">0 DKK</span>
+                        </div>
+                        <div class="breakdown-item" id="cooling-cost-row" style="display:none;">
+                            <span>Køl & Energi</span>
+                            <span id="cooling-cost">0 DKK</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>Andre udgifter</span>
+                            <span id="other-cost">0 DKK</span>
+                        </div>
+                    </div>
 
-    <!-- Results Section -->
-    <div class="results-section">
-        <div class="sticky-result">
-            <h2>Dine Nuværende Omkostninger</h2>
+                    <div class="co2-savings-box">
+                        <p>Ved BioTrans anlæg vil du ud fra dine indtastninger spare yderligere ca. <span
+                                id="co2-savings">0</span> tons CO2 om året</p>
+                        <p id="transport-co2-info"
+                            style="font-size: 0.8em; margin-top: 5px; color: #2e7d32; display: none;">
+                            (Inkl. <span id="transport-dist">0</span> km transport til <span id="biogas-name">nærmeste
+                                anlæg</span>)
+                        </p>
+                    </div>
 
-            <div class="total-cost">
-                <span id="total-annual-cost">0</span> DKK
-                <small>pr. år</small>
-            </div>
-
-            <div class="breakdown">
-                <div class="breakdown-item">
-                    <span>Lønomkostninger</span>
-                    <span id="labor-cost">0 DKK</span>
+                    <div class="cta-box">
+                        <p>Vil du se hvor meget du kan spare?</p>
+                        <button class="cta-button">Kontakt os for en beregning</button>
+                    </div>
                 </div>
-                <div class="breakdown-item">
-                    <span>Bortskaffelse</span>
-                    <span id="disposal-cost">0 DKK</span>
-                </div>
-                <div class="breakdown-item" id="cooling-cost-row" style="display:none;">
-                    <span>Køl & Energi</span>
-                    <span id="cooling-cost">0 DKK</span>
-                </div>
-                <div class="breakdown-item">
-                    <span>Andre udgifter</span>
-                    <span id="other-cost">0 DKK</span>
-                </div>
-            </div>
-
-            <div class="co2-savings-box">
-                <p>Ved BioTrans anlæg vil du ud fra dine indtastninger spare yderligere ca. <span
-                        id="co2-savings">0</span> tons CO2 om året</p>
-                <p id="transport-co2-info" style="font-size: 0.8em; margin-top: 5px; color: #2e7d32; display: none;">
-                    (Inkl. <span id="transport-dist">0</span> km transport til <span id="biogas-name">nærmeste
-                        anlæg</span>)
-                </p>
-            </div>
-
-            <div class="cta-box">
-                <p>Vil du se hvor meget du kan spare?</p>
-                <button class="cta-button">Kontakt os for en beregning</button>
             </div>
         </div>
     </div>
-</div>
-</div>
 
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>
