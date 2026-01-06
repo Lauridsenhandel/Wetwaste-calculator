@@ -17,9 +17,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Disposal Details
         binVolume: document.getElementById('bin-volume'),
-        binsEmptiedDaily: document.getElementById('bins-emptied-daily'),
         emptyingPrice: document.getElementById('emptying-price'),
-        workingDays: document.getElementById('working-days')
+        workingDays: document.getElementById('working-days'),
+        annualPickups: document.getElementById('annual-pickups')
     };
 
     // Sections to toggle
@@ -167,11 +167,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const wasteAmount = parseFloat(inputs.wasteAmount.value) || 0;
         const handlingTime = parseFloat(inputs.handlingTime.value) || 0;
         const hourlyWage = parseFloat(inputs.hourlyWage.value) || 0;
-        const workingDays = parseFloat(inputs.workingDays.value) || 260;
+        const workingDays = parseFloat(inputs.workingDays.value) || 260; // Now from General section
 
         const otherExpenses = parseFloat(inputs.otherExpenses.value) || 0;
 
         // 3. Calculate Labor Cost
+        // Labor cost depends on working days
         const laborCost = handlingTime * workingDays * hourlyWage;
 
         // 4. Calculate Cooling Cost
@@ -186,13 +187,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // 5. Calculate Disposal Cost
-        const binsDaily = parseFloat(inputs.binsEmptiedDaily.value) || 0;
+        // Disposal cost now depends on # of pickups per year, NOT working days
+        // User requested formula: Price per emptying * annual pickups
+        // We do NOT multiply by bins here (assuming price is per pickup event)
         const pricePerEmptying = parseFloat(inputs.emptyingPrice.value) || 0;
+        const annualPickups = parseFloat(inputs.annualPickups.value) || 52;
 
-        const disposalCost = binsDaily * pricePerEmptying * workingDays;
+        // const binsPerPickup = parseFloat(inputs.binsEmptiedDaily.value) || 0;
+        // The user explicitly stated: "Pris pr. tømning * antal tømninger"
+
+        const disposalCost = pricePerEmptying * annualPickups;
 
         // 6. Total
         const totalCost = laborCost + coolingCost + disposalCost + otherExpenses;
+        currentTotalAnnualCost = totalCost; // Store for offer calculation
 
         // 7. Calculate CO2 Savings
         // Base Savings: 0.37 kg CO2 per kg waste
@@ -227,14 +235,237 @@ document.addEventListener('DOMContentLoaded', function () {
         return new Intl.NumberFormat('da-DK', { maximumFractionDigits: 0 }).format(number);
     }
 
+    // Global variable to store current calculation
+    let currentTotalAnnualCost = 0;
+
     // Smart update for waste amount
+    // Removed bin calculation logic as per user request
     inputs.wasteAmount.addEventListener('change', function () {
-        const amount = parseInt(this.value);
-        const bins = (amount / 260) / 60;
-        inputs.binsEmptiedDaily.value = Math.max(1, Math.round(bins * 10) / 10);
         calculate();
     });
 
     // Initial calculation
     calculate();
+
+
+    // --- Offer & Break-Even Logic ---
+
+    const offerInputs = {
+        investment: document.getElementById('investment-cost'),
+        newAnnualCost: document.getElementById('new-annual-cost'),
+        calcBtn: document.getElementById('calc-offer-btn'),
+        resultText: document.getElementById('breakeven-result')
+    };
+
+    let breakEvenChart = null;
+
+    if (offerInputs.calcBtn) {
+        offerInputs.calcBtn.addEventListener('click', calculateOffer);
+    }
+
+    function calculateOffer() {
+        // 1. Validate Inputs
+        const investment = parseFloat(offerInputs.investment.value);
+        const newAnnualCost = parseFloat(offerInputs.newAnnualCost.value);
+
+        if (isNaN(investment) || investment < 0) {
+            alert("Indtast venligst en gyldig engangsinvestering.");
+            return;
+        }
+        if (isNaN(newAnnualCost) || newAnnualCost < 0) {
+            alert("Indtast venligst gyldige årlige omkostninger for ny løsning.");
+            return;
+        }
+
+        // 2. Determine Timeline
+        // If current > new, we have a break-even point
+        // BreakEvenYear = Investment / (Current - New)
+        let breakEvenYear = 0;
+        let maxYear = 10;
+        let hasBreakEven = false;
+
+        const savingsPerYear = currentTotalAnnualCost - newAnnualCost;
+
+        if (savingsPerYear > 0) {
+            breakEvenYear = investment / savingsPerYear;
+            hasBreakEven = true;
+            // Show at least up to break-even + 3 years, max 20 years
+            maxYear = Math.min(25, Math.max(10, Math.ceil(breakEvenYear) + 3));
+        } else {
+            hasBreakEven = false;
+            maxYear = 10; // Default view if no savings
+        }
+
+        // 3. Generate Data Series
+        const labels = [];
+        const currentData = [];
+        const newData = [];
+        const currentYear = new Date().getFullYear();
+
+        for (let i = 0; i <= maxYear; i++) {
+            labels.push(currentYear + i);
+
+            // Current Solution: 0 start cost, grows by currentTotalAnnualCost/year
+            currentData.push(i * currentTotalAnnualCost);
+
+            // New Solution: Investment start cost, grows by newAnnualCost/year
+            newData.push(investment + (i * newAnnualCost));
+        }
+
+        // 4. Update UI Text
+        if (hasBreakEven) {
+            offerInputs.resultText.textContent = `Skæringspunkt / break-even: ca. ${breakEvenYear.toFixed(1)} år`;
+            offerInputs.resultText.style.color = "#2e7d32"; // Green success
+        } else {
+            offerInputs.resultText.textContent = "Ingen break-even med de angivne tal (Ny løsning er dyrere i drift).";
+            offerInputs.resultText.style.color = "#c0392b"; // Red warning
+        }
+
+        // 5. Render Chart
+        renderChart(labels, currentData, newData);
+
+        // 6. Calculate & Render Difference Chart
+        const diffData = currentData.map((val, idx) => val - newData[idx]);
+        const finalSavings = diffData[diffData.length - 1]; // Net result at end of period
+
+        let summaryText = "";
+        if (finalSavings > 0) {
+            summaryText = `Samlet besparelse efter ${maxYear} år: ${new Intl.NumberFormat('da-DK').format(finalSavings)} kr.`;
+            document.getElementById('savings-summary').style.color = "#2e7d32";
+        } else {
+            summaryText = `Ingen besparelse efter ${maxYear} år. Meromkostning: ${new Intl.NumberFormat('da-DK').format(Math.abs(finalSavings))} kr.`;
+            document.getElementById('savings-summary').style.color = "#c0392b";
+        }
+        document.getElementById('savings-summary').textContent = summaryText;
+
+        renderDifferenceChart(labels, diffData);
+    }
+
+    let differenceChart = null;
+
+    function renderDifferenceChart(labels, diffData) {
+        const ctx = document.getElementById('difference-chart').getContext('2d');
+
+        if (differenceChart) {
+            differenceChart.destroy();
+        }
+
+        // Color logic: Green if > 0, Red if < 0.
+        const backgroundColors = diffData.map(val => val >= 0 ? '#007E48' : '#e74c3c');
+
+        differenceChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Nettobesparelse (akkumuleret)',
+                    data: diffData,
+                    backgroundColor: backgroundColors,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false // Hide legend as color implies meaning
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.parsed.y >= 0 ? "Besparelse: " : "Meromkostning: ";
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK', maximumFractionDigits: 0 }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return new Intl.NumberFormat('da-DK').format(value) + ' kr';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderChart(labels, currentData, newData) {
+        const ctx = document.getElementById('breakeven-chart').getContext('2d');
+
+        if (breakEvenChart) {
+            breakEvenChart.destroy();
+        }
+
+        breakEvenChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Nuværende løsning (akkumuleret)',
+                        data: currentData,
+                        borderColor: '#95a5a6', // Gray/Silver
+                        backgroundColor: '#95a5a6',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Ny løsning (akkumuleret)',
+                        data: newData,
+                        borderColor: '#007E48', // Green
+                        backgroundColor: '#007E48',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK', maximumFractionDigits: 0 }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return new Intl.NumberFormat('da-DK').format(value) + ' kr';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
 });
