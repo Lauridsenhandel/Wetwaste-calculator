@@ -183,6 +183,35 @@
                 </div>
             </div>
 
+            <!-- Save & Share UI -->
+            <div
+                style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0;">
+                <div id="shared-banner"
+                    style="display:none; background: #e3f2fd; color: #1565c0; padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center; font-weight: 600;">
+                    Tilbud delt af: <span id="shared-by-name"></span>
+                </div>
+
+                <div id="seller-controls">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="sellerName" style="font-weight: 600;">Sælgernavn (Dit navn)</label>
+                        <input type="text" id="sellerName" placeholder="Indtast dit navn"
+                            style="width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px;">
+                    </div>
+
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button id="saveCaseBtn" class="cta-button"
+                            style="flex: 1; background: #2980b9; margin: 0; font-size: 0.9em;">Gem tilbud</button>
+                        <button id="shareCaseBtn" class="cta-button" disabled
+                            style="flex: 1; background: #bdc3c7; margin: 0; font-size: 0.9em; cursor: not-allowed;">Del
+                            link</button>
+                    </div>
+
+                    <div id="caseStatus" role="status"
+                        style="margin-top: 10px; min-height: 20px; font-size: 0.9em; font-weight: 600; text-align: center;">
+                    </div>
+                </div>
+            </div>
+
             <button id="calc-offer-btn" class="cta-button" style="margin-bottom: 20px;">Beregn Break-Even</button>
 
             <div class="chart-container" style="position: relative; height:400px; width:100%">
@@ -206,6 +235,8 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabaseInit.js"></script>
     <script src="script.js"></script>
 </body>
 

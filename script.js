@@ -468,4 +468,285 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // --- Save & Share Functionality (Supabase) ---
+
+    const sellerNameInput = document.getElementById('sellerName');
+    const saveCaseBtn = document.getElementById('saveCaseBtn');
+    const shareCaseBtn = document.getElementById('shareCaseBtn');
+    const caseStatus = document.getElementById('caseStatus');
+    const sharedBanner = document.getElementById('shared-banner');
+    const sharedByNameSpan = document.getElementById('shared-by-name');
+
+    // State
+    let currentCaseId = null;
+    let currentShareToken = null;
+
+    // A1. Auto-load seller name
+    if (localStorage.getItem('sellerName')) {
+        sellerNameInput.value = localStorage.getItem('sellerName');
+    }
+
+    sellerNameInput.addEventListener('change', () => {
+        localStorage.setItem('sellerName', sellerNameInput.value);
+    });
+
+    // Helper: Status Message
+    function setStatus(msg, type = 'info') {
+        caseStatus.textContent = msg;
+        if (type === 'success') caseStatus.style.color = '#2e7d32';
+        else if (type === 'error') caseStatus.style.color = '#c0392b';
+        else caseStatus.style.color = '#2c3e50';
+
+        // Auto-clear after 5s
+        setTimeout(() => {
+            if (caseStatus.textContent === msg) caseStatus.textContent = '';
+        }, 5000);
+    }
+
+    // B1. Snapshot Inputs
+    function getAllInputsSnapshot(rootEl) {
+        if (!rootEl) rootEl = document;
+        const elements = rootEl.querySelectorAll('input, select, textarea');
+        const values = {};
+
+        elements.forEach(el => {
+            if (!el.id && !el.name) return;
+            const key = el.id || el.name;
+
+            if (el.type === 'checkbox') {
+                values[key] = el.checked;
+            } else if (el.type === 'radio') {
+                if (el.checked) values[el.name] = el.value;
+            } else {
+                values[key] = el.value.trim();
+            }
+        });
+
+        return {
+            schema_version: "inputs_v1",
+            collected_at: new Date().toISOString(),
+            values: values
+        };
+    }
+
+    // C1. Snapshot Outputs
+    function getOutputsSnapshot() {
+        return {
+            schema_version: "outputs_v1",
+            collected_at: new Date().toISOString(),
+            totals: {
+                current_annual_cost_dkk: currentTotalAnnualCost
+            },
+            breakdown: {
+                labor: parseDKK(outputs.laborCost.textContent),
+                disposal: parseDKK(outputs.disposalCost.textContent),
+                energy: parseDKK(outputs.coolingCost.textContent),
+                other: parseDKK(outputs.otherCost.textContent)
+            },
+            offer: {
+                investment_dkk: parseFloat(offerInputs.investment.value) || 0,
+                new_annual_cost_dkk: parseFloat(offerInputs.newAnnualCost.value) || 0
+            },
+            // We save the chart DATA, not the image, to re-render if needed
+            // But simplify for now, sticking to required fields in goal
+        };
+    }
+
+    function parseDKK(str) {
+        if (!str) return 0;
+        // Remove " DKK", " kr", and thousand separators (.), replace decimal (,) with (.)
+        const clean = str.replace(/[^\d,\-]/g, '').replace(/\./g, '').replace(',', '.');
+        return parseFloat(clean) || 0;
+    }
+
+    // D1. Save Case
+    if (saveCaseBtn) {
+        saveCaseBtn.addEventListener('click', async () => {
+            const sellerName = sellerNameInput.value.trim();
+            if (!sellerName) {
+                setStatus("Indtast venligst sælgernavn før du gemmer.", "error");
+                sellerNameInput.focus();
+                return;
+            }
+
+            setStatus("Gemmer...", "info");
+
+            try {
+                const snapshotInputs = getAllInputsSnapshot(document.querySelector('.container'));
+                const snapshotOutputs = getOutputsSnapshot();
+
+                console.table(Object.keys(snapshotInputs.values).map(k => ({ key: k, value: snapshotInputs.values[k] })));
+
+                // Guess specific fields
+                const companyName = snapshotInputs.values['company'] || snapshotInputs.values['companyName'] || null;
+                const address = snapshotInputs.values['address'] || null; // Explicitly capture address
+
+                // Break-even vars (calculated in chart logic) - retrieving from UI text or recalculating
+                // Simplified: recalculate briefly to be safe or parse from UI if possible.
+                // Re-using chart logic variables is hard as they are scoped. 
+                // We'll trust the input values to re-calculate on load.
+                // For DB columns, we can send null if not strictly needed, OR calc simple break-even here:
+                let breakEvenYear = null;
+                const savings = snapshotOutputs.totals.current_annual_cost_dkk - snapshotOutputs.offer.new_annual_cost_dkk;
+                if (savings > 0 && snapshotOutputs.offer.investment_dkk >= 0) {
+                    breakEvenYear = snapshotOutputs.offer.investment_dkk / savings;
+                }
+
+                const payload = {
+                    p_seller_name: sellerName,
+                    p_company_name: companyName,
+                    p_address: address, // Corrected parameter mapping
+                    p_inputs: snapshotInputs,
+                    p_outputs: snapshotOutputs,
+                    p_current_annual_cost_dkk: snapshotOutputs.totals.current_annual_cost_dkk,
+                    p_investment_dkk: snapshotOutputs.offer.investment_dkk || null,
+                    p_new_annual_cost_dkk: snapshotOutputs.offer.new_annual_cost_dkk || null,
+                    p_break_even_years: breakEvenYear,
+                    p_horizon_years: 10 // Default
+                };
+
+                const { data, error } = await window.supabase.rpc('create_case_anon', payload);
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    currentCaseId = data[0].case_id;
+                    currentShareToken = data[0].share_token;
+
+                    // Enable Share button
+                    shareCaseBtn.disabled = false;
+                    shareCaseBtn.style.background = "#e67e22"; // Orange active
+                    shareCaseBtn.style.cursor = "pointer";
+
+                    setStatus("Gemt ✓ (Klar til deling)", "success");
+                }
+
+            } catch (err) {
+                console.error("Save error:", err);
+                setStatus("Fejl ved gem: " + err.message, "error");
+            }
+        });
+    }
+
+    // D2. Share Case
+    if (shareCaseBtn) {
+        shareCaseBtn.addEventListener('click', async () => {
+            if (!currentCaseId) return;
+
+            setStatus("Genererer link...", "info");
+
+            try {
+                const { error } = await window.supabase.rpc('enable_case_sharing_anon', {
+                    p_case_id: currentCaseId,
+                    p_expires_in_days: 30
+                });
+
+                if (error) throw error;
+
+                const shareUrl = `${location.origin}${location.pathname}?share=${currentShareToken}`;
+
+                await navigator.clipboard.writeText(shareUrl);
+                setStatus("Link kopieret til udklipsholder ✓", "success");
+
+                // Also log to console for backup
+                console.log("Share Link:", shareUrl);
+
+                // Make status clickable (link)
+                caseStatus.innerHTML = `Link kopieret ✓ <a href="${shareUrl}" target="_blank" style="color:#2980b9">Test Link</a>`;
+
+            } catch (err) {
+                console.error("Share error:", err);
+                setStatus("Kunne ikke dele: " + err.message, "error");
+            }
+        });
+    }
+
+    // E. Load Shared Case
+    async function loadSharedCase() {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('share');
+
+        if (!token) return;
+
+        console.log("Loading shared case with token:", token);
+
+        // Hide controls in share mode
+        if (document.getElementById('seller-controls')) {
+            document.getElementById('seller-controls').style.display = 'none';
+        }
+
+        try {
+            const { data, error } = await window.supabase.rpc('get_case_by_share_token', {
+                p_token: token
+            });
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                const c = data[0];
+                const inputData = c.inputs.values; // { key: value }
+
+                // 1. Populate Inputs
+                Object.keys(inputData).forEach(key => {
+                    let el = document.getElementById(key);
+                    if (!el) {
+                        // Fallback to name selector for radios
+                        const namedEls = document.getElementsByName(key);
+                        if (namedEls.length > 0) {
+                            namedEls.forEach(radio => {
+                                if (radio.value === inputData[key]) radio.checked = true;
+                            });
+                            return; // Next key
+                        }
+                    }
+
+                    if (el) {
+                        if (el.type === 'checkbox') {
+                            el.checked = inputData[key];
+                        } else {
+                            el.value = inputData[key];
+                        }
+                    }
+                });
+
+                // 2. Trigger Calculations
+                calculate(); // Core calc
+
+                // Allow UI to update before offer calc
+                setTimeout(() => {
+                    if (offerInputs && offerInputs.calcBtn) {
+                        // offerInputs.calcBtn.click(); // Auto-click calculate offer
+                        // Or call function directly:
+                        calculateOffer();
+                    }
+                }, 500);
+
+                // 3. Show Banner
+                if (sharedBanner) {
+                    sharedBanner.style.display = 'block';
+                    sharedByNameSpan.textContent = c.seller_name || "En kollega";
+                }
+
+            } else {
+                alert("Linket er ugyldigt eller udløbet.");
+            }
+
+        } catch (err) {
+            console.error("Load error:", err);
+            setStatus("Fejl ved indlæsning af sag.", "error");
+        }
+    }
+
+    // Init load check
+    // Delay slightly to ensure Supabase init
+    setTimeout(() => {
+        if (window.supabase) {
+            loadSharedCase();
+        } else {
+            // Retry once
+            setTimeout(loadSharedCase, 500);
+        }
+    }, 100);
+
 });
