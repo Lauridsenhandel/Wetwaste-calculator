@@ -601,6 +601,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     p_contact_name: contactName,
                     p_contact_email: contactEmail,
                     p_contact_phone: contactPhone,
+                    p_base_url: window.location.origin + window.location.pathname, // Send current URL
                     p_inputs: snapshotInputs,
                     p_outputs: snapshotOutputs,
                     p_current_annual_cost_dkk: snapshotOutputs.totals.current_annual_cost_dkk,
