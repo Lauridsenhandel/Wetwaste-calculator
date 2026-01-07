@@ -578,15 +578,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 console.table(Object.keys(snapshotInputs.values).map(k => ({ key: k, value: snapshotInputs.values[k] })));
 
-                // Guess specific fields
-                const companyName = snapshotInputs.values['company'] || snapshotInputs.values['companyName'] || null;
+                // Guess specific fields or take from explicit inputs
+                // Prioritize the new contact fields, fallback to snapshot guessing if empty
+                const companyName = document.getElementById('contactCompany').value.trim() || snapshotInputs.values['company'] || snapshotInputs.values['companyName'] || null;
+                const contactName = document.getElementById('contactName').value.trim() || null;
+                const contactEmail = document.getElementById('contactEmail').value.trim() || null;
+                const contactPhone = document.getElementById('contactPhone').value.trim() || null;
+
                 const address = snapshotInputs.values['address'] || null; // Explicitly capture address
 
-                // Break-even vars (calculated in chart logic) - retrieving from UI text or recalculating
-                // Simplified: recalculate briefly to be safe or parse from UI if possible.
-                // Re-using chart logic variables is hard as they are scoped. 
-                // We'll trust the input values to re-calculate on load.
-                // For DB columns, we can send null if not strictly needed, OR calc simple break-even here:
+                // Break-even vars
                 let breakEvenYear = null;
                 const savings = snapshotOutputs.totals.current_annual_cost_dkk - snapshotOutputs.offer.new_annual_cost_dkk;
                 if (savings > 0 && snapshotOutputs.offer.investment_dkk >= 0) {
@@ -596,7 +597,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 const payload = {
                     p_seller_name: sellerName,
                     p_company_name: companyName,
-                    p_address: address, // Corrected parameter mapping
+                    p_address: address,
+                    p_contact_name: contactName,
+                    p_contact_email: contactEmail,
+                    p_contact_phone: contactPhone,
                     p_inputs: snapshotInputs,
                     p_outputs: snapshotOutputs,
                     p_current_annual_cost_dkk: snapshotOutputs.totals.current_annual_cost_dkk,
