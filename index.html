@@ -31,9 +31,11 @@
                         <div class="form-group">
                             <label for="waste-amount">Mængde madaffald (årligt)</label>
                             <select id="waste-amount">
-                                <option value="7500">0 - 15.000 kg</option>
-                                <option value="20000">15.000 - 25.000 kg</option>
-                                <option value="37500">25.000 - 50.000 kg</option>
+                                <option value="5000">0 – 10.000 kg</option>
+                                <option value="15000">10.000 – 20.000 kg</option>
+                                <option value="25000">20.000 – 30.000 kg</option>
+                                <option value="35000">30.000 – 40.000 kg</option>
+                                <option value="45000">40.000 – 50.000 kg</option>
                                 <option value="60000">50.000+ kg</option>
                             </select>
                             <small>Vælg et estimat hvis du ikke kender det præcise tal.</small>
@@ -101,21 +103,139 @@
 
                     <div class="card">
                         <h2>Bortskaffelse</h2>
-                        <div class="form-group">
-                            <label for="bin-volume">Beholdertype</label>
-                            <select id="bin-volume">
-                                <option value="120">120 Liter (ca. 120 kg)</option>
-                                <option value="240">240 Liter (ca. 240 kg)</option>
-                            </select>
+                        <p class="bin-intro">Vælg de beholdertyper kunden anvender og angiv pris og antal tømninger for hver:</p>
+
+                        <div class="bin-type-row">
+                            <label class="bin-checkbox-label">
+                                <input type="checkbox" id="bin-60" class="bin-checkbox">
+                                <span>60 liter</span>
+                            </label>
+                            <div class="bin-details" id="bin-details-60" style="display:none">
+                                <div class="bin-detail-fields">
+                                    <div class="form-group-inline">
+                                        <label for="emptying-price-60">Pris pr. tømning (DKK)</label>
+                                        <input type="number" id="emptying-price-60" value="50" min="0">
+                                    </div>
+                                    <div class="form-group-inline">
+                                        <label for="annual-pickups-60">Antal tømninger/år</label>
+                                        <input type="number" id="annual-pickups-60" value="52" min="1">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="emptying-price">Pris pr. tømning (DKK)</label>
-                            <input type="number" id="emptying-price" value="50">
+                        <div class="bin-type-row">
+                            <label class="bin-checkbox-label">
+                                <input type="checkbox" id="bin-120" class="bin-checkbox">
+                                <span>120 liter</span>
+                            </label>
+                            <div class="bin-details" id="bin-details-120" style="display:none">
+                                <div class="bin-detail-fields">
+                                    <div class="form-group-inline">
+                                        <label for="emptying-price-120">Pris pr. tømning (DKK)</label>
+                                        <input type="number" id="emptying-price-120" value="50" min="0">
+                                    </div>
+                                    <div class="form-group-inline">
+                                        <label for="annual-pickups-120">Antal tømninger/år</label>
+                                        <input type="number" id="annual-pickups-120" value="52" min="1">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="annual-pickups">Antal tømninger på et år</label>
-                            <input type="number" id="annual-pickups" value="52">
+
+                        <div class="bin-type-row">
+                            <label class="bin-checkbox-label">
+                                <input type="checkbox" id="bin-240" class="bin-checkbox">
+                                <span>240 liter</span>
+                            </label>
+                            <div class="bin-details" id="bin-details-240" style="display:none">
+                                <div class="bin-detail-fields">
+                                    <div class="form-group-inline">
+                                        <label for="emptying-price-240">Pris pr. tømning (DKK)</label>
+                                        <input type="number" id="emptying-price-240" value="50" min="0">
+                                    </div>
+                                    <div class="form-group-inline">
+                                        <label for="annual-pickups-240">Antal tømninger/år</label>
+                                        <input type="number" id="annual-pickups-240" value="52" min="1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bin-type-row">
+                            <label class="bin-checkbox-label">
+                                <input type="checkbox" id="bin-400" class="bin-checkbox">
+                                <span>400 liter</span>
+                            </label>
+                            <div class="bin-details" id="bin-details-400" style="display:none">
+                                <div class="bin-detail-fields">
+                                    <div class="form-group-inline">
+                                        <label for="emptying-price-400">Pris pr. tømning (DKK)</label>
+                                        <input type="number" id="emptying-price-400" value="50" min="0">
+                                    </div>
+                                    <div class="form-group-inline">
+                                        <label for="annual-pickups-400">Antal tømninger/år</label>
+                                        <input type="number" id="annual-pickups-400" value="52" min="1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bin-type-row">
+                            <label class="bin-checkbox-label">
+                                <input type="checkbox" id="bin-500" class="bin-checkbox">
+                                <span>500 liter</span>
+                            </label>
+                            <div class="bin-details" id="bin-details-500" style="display:none">
+                                <div class="bin-detail-fields">
+                                    <div class="form-group-inline">
+                                        <label for="emptying-price-500">Pris pr. tømning (DKK)</label>
+                                        <input type="number" id="emptying-price-500" value="50" min="0">
+                                    </div>
+                                    <div class="form-group-inline">
+                                        <label for="annual-pickups-500">Antal tømninger/år</label>
+                                        <input type="number" id="annual-pickups-500" value="52" min="1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bin-type-row">
+                            <label class="bin-checkbox-label">
+                                <input type="checkbox" id="bin-660" class="bin-checkbox">
+                                <span>660 liter</span>
+                            </label>
+                            <div class="bin-details" id="bin-details-660" style="display:none">
+                                <div class="bin-detail-fields">
+                                    <div class="form-group-inline">
+                                        <label for="emptying-price-660">Pris pr. tømning (DKK)</label>
+                                        <input type="number" id="emptying-price-660" value="50" min="0">
+                                    </div>
+                                    <div class="form-group-inline">
+                                        <label for="annual-pickups-660">Antal tømninger/år</label>
+                                        <input type="number" id="annual-pickups-660" value="52" min="1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bin-type-row">
+                            <label class="bin-checkbox-label">
+                                <input type="checkbox" id="bin-700" class="bin-checkbox">
+                                <span>700 liter</span>
+                            </label>
+                            <div class="bin-details" id="bin-details-700" style="display:none">
+                                <div class="bin-detail-fields">
+                                    <div class="form-group-inline">
+                                        <label for="emptying-price-700">Pris pr. tømning (DKK)</label>
+                                        <input type="number" id="emptying-price-700" value="50" min="0">
+                                    </div>
+                                    <div class="form-group-inline">
+                                        <label for="annual-pickups-700">Antal tømninger/år</label>
+                                        <input type="number" id="annual-pickups-700" value="52" min="1">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

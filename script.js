@@ -15,11 +15,8 @@ document.addEventListener('DOMContentLoaded', function () {
         coolingDays: document.getElementById('cooling-days'),
         kwhPrice: document.getElementById('kwh-price'),
 
-        // Disposal Details
-        binVolume: document.getElementById('bin-volume'),
-        emptyingPrice: document.getElementById('emptying-price'),
-        workingDays: document.getElementById('working-days'),
-        annualPickups: document.getElementById('annual-pickups')
+        // Working Days
+        workingDays: document.getElementById('working-days')
     };
 
     // Sections to toggle
@@ -153,6 +150,22 @@ document.addEventListener('DOMContentLoaded', function () {
         return deg * (Math.PI / 180);
     }
 
+    // Container sizes for disposal calculation
+    const BIN_SIZES = [60, 120, 240, 400, 500, 660, 700];
+
+    function calculateDisposalCost() {
+        let total = 0;
+        BIN_SIZES.forEach(size => {
+            const checkbox = document.getElementById(`bin-${size}`);
+            if (checkbox && checkbox.checked) {
+                const price = parseFloat(document.getElementById(`emptying-price-${size}`)?.value) || 0;
+                const pickups = parseFloat(document.getElementById(`annual-pickups-${size}`)?.value) || 0;
+                total += price * pickups;
+            }
+        });
+        return total;
+    }
+
     function calculate() {
         // 1. Toggle Visibility
         if (inputs.hasCooling.checked) {
@@ -187,16 +200,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // 5. Calculate Disposal Cost
-        // Disposal cost now depends on # of pickups per year, NOT working days
-        // User requested formula: Price per emptying * annual pickups
-        // We do NOT multiply by bins here (assuming price is per pickup event)
-        const pricePerEmptying = parseFloat(inputs.emptyingPrice.value) || 0;
-        const annualPickups = parseFloat(inputs.annualPickups.value) || 52;
-
-        // const binsPerPickup = parseFloat(inputs.binsEmptiedDaily.value) || 0;
-        // The user explicitly stated: "Pris pr. tømning * antal tømninger"
-
-        const disposalCost = pricePerEmptying * annualPickups;
+        // Sum of (price × pickups) for each selected container type
+        const disposalCost = calculateDisposalCost();
 
         // 6. Total
         const totalCost = laborCost + coolingCost + disposalCost + otherExpenses;
@@ -239,9 +244,22 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentTotalAnnualCost = 0;
 
     // Smart update for waste amount
-    // Removed bin calculation logic as per user request
     inputs.wasteAmount.addEventListener('change', function () {
         calculate();
+    });
+
+    // Container type checkbox event listeners
+    BIN_SIZES.forEach(size => {
+        const cb = document.getElementById(`bin-${size}`);
+        if (cb) {
+            cb.addEventListener('change', () => {
+                document.getElementById(`bin-details-${size}`).style.display = cb.checked ? 'block' : 'none';
+                calculate();
+            });
+        }
+        [`emptying-price-${size}`, `annual-pickups-${size}`].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', calculate);
+        });
     });
 
     // Initial calculation
@@ -712,6 +730,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         } else {
                             el.value = inputData[key];
                         }
+                    }
+                });
+
+                // 1b. Restore container row visibility based on checkbox states
+                BIN_SIZES.forEach(size => {
+                    const cb = document.getElementById(`bin-${size}`);
+                    if (cb) {
+                        document.getElementById(`bin-details-${size}`).style.display = cb.checked ? 'block' : 'none';
                     }
                 });
 
