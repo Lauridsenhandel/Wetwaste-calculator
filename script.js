@@ -158,9 +158,10 @@ document.addEventListener('DOMContentLoaded', function () {
         BIN_SIZES.forEach(size => {
             const checkbox = document.getElementById(`bin-${size}`);
             if (checkbox && checkbox.checked) {
+                const count = parseFloat(document.getElementById(`bin-count-${size}`)?.value) || 1;
                 const price = parseFloat(document.getElementById(`emptying-price-${size}`)?.value) || 0;
                 const pickups = parseFloat(document.getElementById(`annual-pickups-${size}`)?.value) || 0;
-                total += price * pickups;
+                total += count * price * pickups;
             }
         });
         return total;
@@ -257,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 calculate();
             });
         }
-        [`emptying-price-${size}`, `annual-pickups-${size}`].forEach(id => {
+        [`bin-count-${size}`, `emptying-price-${size}`, `annual-pickups-${size}`].forEach(id => {
             document.getElementById(id)?.addEventListener('input', calculate);
         });
     });
